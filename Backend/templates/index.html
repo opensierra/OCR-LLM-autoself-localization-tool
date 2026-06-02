@@ -1,0 +1,111 @@
+{% extends 'father.html' %}
+
+{% block content %}
+<div class="min-vh-100 d-flex justify-content-center align-items-center">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <div class="col-md-8 py-3 d-flex flex-column justify-content-center align-items-start">
+
+                <small class="text-uppercase letter-spaced mb-2" style="font-size: 0.75rem; color: #8a949f !important;">
+                    QA tool · LATAM Spanish localization 
+                </small>
+                <h1 class="display-3 fw-bold text-primary mb-1 lh-1">Welcome to <span class="text-white-50">Vivo</span> <span class="text-primary">DPI</span></h1>
+                
+                <p class="mb-0 mt-2" style="color: #a0aec0 !important; font-size: 1.05rem;">Select a folder to start working on.</p>
+
+                <button class="btn btn-primary btn-lg px-5 py-3 mt-4 fw-bold shadow-lg rounded-3" onclick="SelectFolder()" style="letter-spacing: 0.02em;">
+                    Select directory
+                </button>
+
+                <div class="w-100 mt-5 pt-3 border-top border-secondary border-opacity-25" style="max-width: 520px;">
+                    
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" role="switch" id="resetCacheSwitch" style="cursor: pointer;">
+                        <label class="form-check-label fw-bold text-uppercase letter-spaced small ms-1" for="resetCacheSwitch" style="font-size: 0.72rem; color: #8a949f !important; cursor: pointer;">
+                            Start fresh (ignore existing cache)
+                        </label>
+                    </div>
+
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="modelSelect" class="form-label fw-bold text-uppercase letter-spaced small m-0" style="font-size: 0.72rem; color: #8a949f !important;">
+                                Ollama Model
+                            </label>
+                            <span class="small fst-italic" style="font-size: 0.75rem; color: #64748b !important;">Applied on directory selection</span>
+                        </div>
+                        
+                        <div class="input-group border border-secondary rounded-3 overflow-hidden shadow-sm" style="background: #1e2125;">
+                            <select id="modelSelect" class="form-select bg-transparent text-white border-0 py-2 fs-6 ps-3" style="box-shadow: none;">
+                                <option value="" disabled selected>Loading models…</option>
+                            </select>
+                            <button class="btn btn-dark text-primary border-0 border-start border-secondary px-3 fw-semibold small" 
+                                    type="button" 
+                                    onclick="addNewModel()" 
+                                    title="Download a new model from ollama.com"
+                                    style="background: rgba(13, 110, 253, 0.05);">
+                                <span class="me-1">+</span> Add model
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="col-md-4 d-flex justify-content-center align-items-center">
+                <img src="{{ url_for('static', filename='images/dpi_logo.png') }}"
+                     alt="Vivo DPI Logo" class="img-fluid index-logo" style="max-width: 200px;">
+            </div>
+
+            <div class="col-12 mt-5">
+                <hr class="border-secondary opacity-25">
+                <p class="text-secondary small text-center m-0">
+                    Building by test engineer 20007434
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    // Populate the model dropdown on page load.
+    (async function loadModels() {
+        try {
+            const res = await fetch('/models/list');
+            const data = await res.json();
+            const sel = document.getElementById('modelSelect');
+            sel.innerHTML = '';
+
+            if (!data.available) {
+                const opt = document.createElement('option');
+                opt.disabled = true;
+                opt.selected = true;
+                opt.textContent = 'Ollama not detected in PATH';
+                sel.appendChild(opt);
+                return;
+            }
+
+            if (!data.models || data.models.length === 0) {
+                const opt = document.createElement('option');
+                opt.disabled = true;
+                opt.selected = true;
+                opt.textContent = 'No models installed — use "Add model"';
+                sel.appendChild(opt);
+                return;
+            }
+
+            data.models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.style.backgroundColor = '#212529';
+                opt.textContent = `${m.name}  ·  ${m.size}`;
+                if (m.name === data.current) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('[INDEX] Could not populate dropdown:', err);
+        }
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,303 @@
+/* ==========================================================================
+   VivoDPI — global stylesheet
+   Aesthetic direction: refined dark, single accent (Bootstrap primary blue),
+   subtle micro-interactions, no AI-generic gradients or purple cliches.
+   ========================================================================== */
+
+:root {
+    --dpi-bg:           #1a1d21;
+    --dpi-surface:      #212529;   /* matches bg-dark */
+    --dpi-surface-2:    #2a2e33;
+    --dpi-border:       #3a3f47;
+    --dpi-primary:      #0d6efd;   /* keep Bootstrap primary, do not drift */
+    --dpi-primary-soft: rgba(13, 110, 253, 0.18);
+    --dpi-text:         #f1f3f5;
+    --dpi-text-muted:   #adb5bd;
+    --dpi-danger:       #dc3545;
+    --dpi-warning:      #ffc107;
+    --dpi-info:         #0dcaf0;
+    --dpi-radius:       0.95rem;
+    --dpi-radius-lg:    1.5rem;
+    --dpi-ease:         cubic-bezier(0.4, 0.0, 0.2, 1);
+    --dpi-shadow-card:  0 12px 30px rgba(0, 0, 0, 0.35);
+    --dpi-shadow-soft:  0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+body {
+    zoom: 90%;
+    margin: 0;
+    padding: 0;
+    background: var(--dpi-bg);
+    color: var(--dpi-text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* Hide scrollbars globally while keeping scroll functional */
+* {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+*::-webkit-scrollbar { display: none; }
+
+/* Utility: small uppercase with extra tracking, used a lot for section titles */
+.letter-spaced {
+    letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
+   Navbar + footer polish
+   ========================================================================== */
+.navbar {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.navbar .navbar-text {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+}
+.footer {
+    border-top: 1px solid var(--dpi-border);
+}
+
+/* ==========================================================================
+   Index page: subtle entrance + logo polish
+   ========================================================================== */
+.index-logo {
+    filter: drop-shadow(0 12px 24px rgba(13, 110, 253, 0.25));
+    transition: transform 0.6s var(--dpi-ease);
+}
+.index-logo:hover {
+    transform: scale(1.04) rotate(-1.5deg);
+}
+
+/* ==========================================================================
+   Workspace file list — refined item styling
+   ========================================================================== */
+#workspace-scroll .list-group {
+    background: transparent;
+    border: none;
+}
+.ws-item {
+    background: var(--dpi-surface-2) !important;
+    color: var(--dpi-text-muted) !important;
+    border: 1px solid transparent !important;
+    border-radius: 0.5rem !important;
+    margin-bottom: 4px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.86rem;
+    transition: all 0.18s var(--dpi-ease);
+}
+.ws-item:hover {
+    background: var(--dpi-surface) !important;
+    border-color: var(--dpi-border) !important;
+    color: var(--dpi-text) !important;
+    transform: translateX(2px);
+}
+.ws-item[data-active="true"] {
+    background: var(--dpi-primary) !important;
+    color: #fff !important;
+    border-color: var(--dpi-primary) !important;
+    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.35);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   List transitions (kept from original)
+   ========================================================================== */
+.lista-oculta {
+    opacity: 0;
+    filter: blur(8px);
+    transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+}
+.lista-visible {
+    opacity: 1;
+    filter: blur(0);
+}
+
+/* ==========================================================================
+   Buttons: subtle hover lift and tighter focus
+   Keeps bootstrap classes, only enhances behavior.
+   ========================================================================== */
+.btn {
+    transition: transform 0.18s var(--dpi-ease),
+                box-shadow 0.18s var(--dpi-ease),
+                background-color 0.18s var(--dpi-ease),
+                border-color 0.18s var(--dpi-ease);
+}
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--dpi-shadow-soft);
+}
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+.btn-primary {
+    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.25);
+}
+.btn-primary:hover {
+    box-shadow: 0 6px 18px rgba(13, 110, 253, 0.4) !important;
+}
+
+/* ==========================================================================
+   Processing card (Gemini sweep effect) - kept verbatim
+   ========================================================================== */
+.processing-card {
+    position: relative;
+    box-shadow: var(--dpi-shadow-card);
+    transition: all 0.3s ease;
+}
+
+.sweep-light {
+    position: absolute;
+    inset: -30%;
+    background: linear-gradient(
+        125deg,
+        rgba(13, 110, 253, 0.0) 15%,
+        rgba(13, 110, 253, 0.2) 35%,
+        rgba(0, 123, 255, 0.35) 50%,
+        rgba(10, 50, 150, 0.4) 65%,
+        rgba(13, 110, 253, 0.0) 85%
+    );
+    background-size: 250% 250%;
+    filter: blur(35px);
+    mix-blend-mode: screen;
+    animation: blueGeminiFlow 4s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes blueGeminiFlow {
+    0%   { background-position: 0% 30%;   transform: scale(0.95) rotate(0deg); }
+    50%  { background-position: 100% 70%; transform: scale(1.05) rotate(3deg); }
+    100% { background-position: 30% 100%; transform: scale(1.0)  rotate(-2deg); }
+}
+
+.loading-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 0.5em;
+    animation: spinner-border .75s linear infinite;
+}
+
+@keyframes elegantPulse {
+    0%, 100% { transform: scale(0.75); opacity: 0.4; }
+    45%      { transform: scale(1.25); opacity: 1; filter: brightness(1.3); }
+}
+
+/* ==========================================================================
+   PREVIEW LENS — frame, loading state, interactive zoom
+   ----------------------------------------------------------------------------
+   .preview-frame      : the visible card. Full column width, fixed height (50vh)
+                         so the page never reflows when the image changes.
+   .preview-loading-bg : the blurred background used ONLY by #loading-state.
+   .preview-zoom-wrapper / .zoom-viewport / .zoom-target / .zoom-controls :
+                         interactive zoom & pan layer.
+   ========================================================================== */
+.preview-frame {
+    width: 100%;
+    height: 50vh;
+    background: #0f1115;
+    box-shadow: var(--dpi-shadow-card);
+    position: relative;
+}
+
+.preview-loading-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: blur(12px) brightness(0.35);
+    display: block;
+}
+
+.preview-zoom-wrapper {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--dpi-radius);
+}
+
+.zoom-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0f1115;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: var(--dpi-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-viewport.is-panning { cursor: grabbing; }
+
+.zoom-target {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0 auto;
+    transform-origin: 0 0;
+    transition: transform 0.05s linear;
+    will-change: transform;
+    object-fit: contain;
+}
+
+.zoom-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 4;
+    opacity: 0.85;
+    transition: opacity 0.2s var(--dpi-ease);
+}
+.preview-zoom-wrapper:hover .zoom-controls { opacity: 1; }
+
+.zoom-controls .btn {
+    background: rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #fff;
+    font-weight: bold;
+    min-width: 34px;
+    padding: 4px 10px;
+    backdrop-filter: blur(6px);
+}
+.zoom-controls .btn:hover {
+    background: var(--dpi-primary);
+    border-color: var(--dpi-primary);
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   Summary card and issue list polish
+   ========================================================================== */
+#gemini-issues .list-group-item {
+    border-radius: 0.5rem !important;
+    margin-bottom: 3px;
+    transition: all 0.15s var(--dpi-ease);
+}
+#gemini-issues .list-group-item:hover {
+    background: var(--dpi-surface-2) !important;
+    transform: translateX(2px);
+}
+
+/* ==========================================================================
+   Form controls in dark theme (model selector, switch)
+   ========================================================================== */
+.form-select.bg-dark {
+    background-color: var(--dpi-surface) !important;
+    color: var(--dpi-text) !important;
+    border-color: var(--dpi-border) !important;
+}
+.form-select.bg-dark:focus {
+    border-color: var(--dpi-primary);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.form-check-input:checked {
+    background-color: var(--dpi-primary);
+    border-color: var(--dpi-primary);
+}

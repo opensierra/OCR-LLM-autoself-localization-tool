@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entorno virtual
+venv/
+.venv/
+
+# Carpetas locales
+bin/
+tesseract/
+test/
+test/
+
+# VS Code
+.vscode/
+
+# Builds
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log

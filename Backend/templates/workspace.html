@@ -1,0 +1,271 @@
+{% extends 'father.html' %}
+
+{% block content %}
+<!-- Outer container: balanced padding (px-4 instead of px-5) so the row
+     is visually centered, no longer shifted to the right. -->
+<div class="container-fluid px-4 py-3">
+    <div class="row g-4 min-vh-100">
+
+        <!-- ============ WORKSPACE (left) ============ -->
+        <div class="col-md-3 bg-dark text-white rounded-5 py-3">
+            <div class="text-center">
+                <h2 class="fw-bold text-secondary py-3">Workspace</h2>
+            </div>
+            <hr>
+            <div class="card bg-dark text-white border-0">
+                <div class="card-body p-2">
+                    <div id="workspace-scroll" class="no-scrollbar" style="max-height: 60vh; min-height: 60vh; overflow-y: auto;">
+                        <ul class="list-group">
+                            {% for archivo in tree %}
+                            <li class="list-group-item text-truncate ws-item"
+                                    {% if archivo == current_img %}
+                                        id="current-active-item"
+                                        data-active="true"
+                                    {% endif %}
+                                title="{{ archivo }}">
+                                {{ archivo }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Primary actions -->
+            <hr class="border-secondary">
+            <div class="d-flex flex-column justify-content-center align-items-center w-100 py-2">
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-dark text-secondary btn-lg border border-black mx-2" style="min-width: 40%" onclick="SelectFolder()">Workspace</button>
+                    <button class="btn btn-dark text-secondary btn-lg border border-black mx-2" style="min-width: 40%" onclick="collectData()">Add</button>
+                </div>
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-primary text-white btn-lg border border-black mx-2" style="min-width: 40%" onclick="runBatch()">Auto</button>
+                    <button class="btn btn-dark text-secondary btn-lg border border-black mx-2" style="min-width: 40%" onclick="saveFinalReport()">Export</button>
+                </div>
+            </div>
+
+            <!-- Cache controls — same shape as primary actions: two rows of two big buttons -->
+            <hr class="border-secondary">
+            <div class="text-center mb-2">
+                <small class="fw-bold text-secondary text-uppercase letter-spaced">Cache</small>
+            </div>
+            <div class="d-flex flex-column justify-content-center align-items-center w-100 py-2">
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-outline-info btn-lg mx-2" style="min-width: 40%" onclick="reprocessCurrentImage()"
+                            title="Clear this image's cache and reprocess it">
+                        Reprocess
+                    </button>
+                    <button class="btn btn-outline-warning btn-lg mx-2" style="min-width: 40%" onclick="purgeWorkspaceCache()"
+                            title="Clear cache for the current workspace">
+                        Clear ws
+                    </button>
+                </div>
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-outline-danger btn-lg mx-2" style="min-width: 40%" onclick="purgeAllCache()"
+                            title="Wipe ALL cache from disk">
+                        Clear all
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg mx-2" style="min-width: 40%" onclick="showCacheStats()"
+                            title="Show cache size and entries">
+                        Stats
+                    </button>
+                </div>
+            </div>
+            <div id="cache-stats-area" class="small text-secondary mt-2 px-3 text-start"></div>
+            <hr class="border-secondary">
+        </div>
+
+        <!-- ============ PREVIEW LENS (center) ============ -->
+        <div class="col-md-6 flex-column text-center bg-dark rounded-5 mx-2" style="width: calc(50% - 1rem);">
+            <div class="rounded-5 bg-primary fw-bold text-white text-center py-3 mx-4 my-4">
+                <h2 class="m-0">Preview lens</h2>
+            </div>
+
+            <div class="container-fluid text-center text-white">
+
+                <!-- Preview area: full-width inside the column, fixed height -->
+                <div class="px-4 pb-3">
+
+                    <!-- LOADING STATE: only visible while OCR is running. -->
+                    <div id="loading-state"
+                         class="rounded-4 border border-secondary d-none position-relative p-0 processing-card preview-frame"
+                         style="overflow: hidden;">
+                        <img src="{{ url_for('serve_image', abs_path=current_img) }}"
+                             class="preview-loading-bg"
+                             alt="Image being processed">
+                        <div class="sweep-light"></div>
+                        <div class="position-absolute top-50 start-50 translate-middle
+                                    d-flex flex-column align-items-center justify-content-center text-white"
+                             style="z-index: 3; width: 80%;">
+                            <div class="spinner-border text-primary loading-circle" role="status">
+                                <span class="visually-hidden">Executing OCR...</span>
+                            </div>
+                            <small class="mt-3 text-info text-uppercase letter-spaced">Processing</small>
+                        </div>
+                    </div>
+
+                    <!-- IMAGE CONTENT: clean original or cached preview with boxes -->
+                    {% if processed_paths and imgIndex in processed_paths %}
+                        <div id="image-content"
+                             class="rounded-4 border border-secondary preview-frame preview-zoom-wrapper"
+                             style="overflow: hidden;">
+                            <div class="zoom-viewport">
+                                <img id="preview-img"
+                                     src="{{ url_for('static', filename='images/cache/' + processed_paths[imgIndex]) }}"
+                                     class="zoom-target"
+                                     alt="Processed image">
+                            </div>
+                            <div class="zoom-controls">
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomIn()" title="Zoom in">+</button>
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomOut()" title="Zoom out">−</button>
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomReset()" title="Reset">⤢</button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div id="image-content"
+                             class="rounded-4 border border-secondary preview-frame preview-zoom-wrapper"
+                             style="overflow: hidden;">
+                            <div class="zoom-viewport">
+                                <img id="preview-img"
+                                     src="{{ url_for('serve_image', abs_path=current_img) }}"
+                                     class="zoom-target"
+                                     alt="Original image">
+                            </div>
+                            <div class="zoom-controls">
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomIn()" title="Zoom in">+</button>
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomOut()" title="Zoom out">−</button>
+                                <button class="btn btn-sm btn-outline-light" type="button" onclick="zoomReset()" title="Reset">⤢</button>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <p class="rounded-5 bg-secondary text-white mx-5 mb-3 py-1 px-3 small text-truncate" title="{{ current_img }}">
+                    {{ imgIndex + 1 }} / {{ tree|length }} — {{ current_img }}
+                </p>
+
+                <!-- Text panels -->
+                <div class="container-fluid">
+                    <div class="rounded-4 px-2">
+                        <div class="row g-3 pb-3 justify-content-center align-items-stretch">
+                            <div class="col-5 rounded-4 bg-light text-dark border border-secondary mx-2 d-flex flex-column"
+                                 style="max-width: 100%; min-height: 20vh; max-height: 20vh; text-align: left;">
+                                <p class="fw-bold text-secondary text-center pt-2 m-0 text-uppercase letter-spaced small" style="min-width: 100%;">Extracted text</p>
+                                <hr class="my-2">
+                                <div class="flex-grow-1 px-3 pb-3 no-scrollbar" style="overflow-y: auto;">
+                                    {{ extracted_text }}
+                                </div>
+                            </div>
+                            <div class="col-5 rounded-4 bg-light text-dark border border-secondary mx-2 d-flex flex-column"
+                                 style="max-width: 100%; min-height: 20vh; max-height: 20vh; text-align: left;">
+                                <p class="fw-bold text-secondary text-center pt-2 m-0 text-uppercase letter-spaced small" style="min-width: 100%;">Fast remark</p>
+                                <hr class="my-2">
+                                <div class="flex-grow-1 px-3 pb-3 no-scrollbar" style="overflow-y: auto;" id="gemini-summary">
+                                    --
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 pb-2 justify-content-center align-items-center">
+                            <p class="fw-bold text-secondary text-right mt-2 px-5 m-0 text-uppercase letter-spaced small" style="min-width: 100%;">Raw Data</p>
+                            <div class="col rounded-4 bg-secondary text-muted border border-secondary mx-2 text-start" style="max-width: 85%;">
+                                <div class="flex-grow-1 px-2 pb-2 my-2 no-scrollbar" style="max-height: 15vh; overflow-y: auto;">
+                                    <p class="fw-bold pt-2 m-0 text-white-50">OCR Output</p>
+                                    <span class="text-break">{{ raw_text }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 pb-2 justify-content-center align-items-center pb-5">
+                            <div class="col rounded-4 bg-secondary text-muted border border-secondary mx-2 text-start" style="max-width: 85%;">
+                                <div class="flex-grow-1 px-2 pb-2 my-2 no-scrollbar" style="max-height: 15vh; overflow-y: auto;">
+                                    <p class="fw-bold pt-2 m-0 text-white-50">JSON Response</p>
+                                    <span id="gemini-raw-json" class="text-break small m-0" style="white-space: pre-wrap; word-break: break-word; font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;">This image has not been analyzed yet.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ CONTROL (right) ============ -->
+        <div class="col-md-3 bg-dark text-white rounded-5 py-3 text-center">
+            <div class="text-center">
+                <h2 class="fw-bold text-secondary py-3">Control</h2>
+            </div>
+            <hr class="border-secondary">
+
+            <div class="d-flex flex-column justify-content-center align-items-center w-100 py-2">
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-dark btn-lg border border-black mx-2" style="min-width: 40%" onclick="ProcessImage()">OCR</button>
+                    <button class="btn btn-dark btn-lg border border-black mx-2" style="min-width: 40%" onclick="ReviewImage()">Analyze</button>
+                </div>
+                <div class="d-flex justify-content-center w-100 py-2">
+                    <button class="btn btn-dark btn-lg border border-black mx-2" style="min-width: 40%" onclick="Prev()">Previous</button>
+                    <button class="btn btn-dark btn-lg border border-black mx-2" style="min-width: 40%" onclick="Next()">Next</button>
+                </div>
+            </div>
+
+            <hr class="border-secondary">
+
+            <div class="text-center">
+                <h2 class="fw-bold text-secondary pb-3">Summary</h2>
+            </div>
+
+            <div class="py-1 mx-3 rounded-4 border border-black">
+                <div class="d-flex justify-content-around bg-dark rounded p-2">
+                    <div class="p-2 text-center text-white">
+                        <div class="h4 mb-0" id="gemini-issues-count">0</div>
+                        <small class="fw-bold text-white">Total <br> Issues</small>
+                    </div>
+                    <div class="p-2 text-center">
+                        <div class="h4 mb-0 text-danger" id="count-alta">0</div>
+                        <small class="fw-bold text-white">High <br> Severity</small>
+                    </div>
+                    <div class="p-2 text-center">
+                        <div class="h4 mb-0 text-warning" id="count-media">0</div>
+                        <small class="fw-bold text-white">Mid <br> Severity</small>
+                    </div>
+                    <div class="p-2 text-center">
+                        <div class="h4 mb-0 text-info" id="count-baja">0</div>
+                        <small class="fw-bold text-white">Low <br> Severity</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issue list -->
+            <div class="card mx-3 mt-2 bg-secondary text-white border border-black" id="gemini-content">
+                <div class="card-body p-0">
+                    <div class="no-scrollbar" style="max-height: 30vh; min-height: 30vh; overflow-y: auto;">
+                        <ul id="gemini-issues" class="list-group bg-secondary text-white">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="gemini-loading-state" class="card mx-3 mt-2 bg-dark text-white border border-secondary d-none position-relative p-0 processing-card"
+                style="max-height: 30vh; min-height: 30vh; overflow: hidden;">
+                <div class="sweep-light"></div>
+                <div class="position-absolute top-50 start-50 translate-middle d-flex flex-column align-items-center justify-content-center text-white" style="z-index: 3;">
+                    <div class="spinner-border text-primary loading-circle" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mx-3 mt-4 p-2 bg-dark text-secondary border border-black">
+                <small class="fw-bold text-uppercase letter-spaced">Remark</small>
+                <hr class="border border-secondary my-2">
+                <small>
+                    This tool relies on computer-vision OCR and a local LLM.
+                    It is not infallible. Verify and review the output data.
+                </small>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

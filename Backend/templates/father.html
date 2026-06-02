@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivo DPI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="no-scrollbar">
+    <nav class="navbar bg-dark text-secondary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <h3 class=" fw-bold text-white mt-2">Vivo DPI</h3>
+            <span class="navbar-text">
+                Build: Beta 0.1 |  
+                Idioma esperado: {{ language }}
+            </span>
+        </div>
+    </nav>
+    <main class="container-fluid width-100">
+            {% block content %}
+            {% endblock %}
+    </main>
+    <div class="footer bg-light text-muted text-center py-3">
+        <p>&copy; 2026 Vivo DPI. Todos los derechos reservados.</p>
+    </div>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/API.js') }}"></script>
+</body>
+</html>
